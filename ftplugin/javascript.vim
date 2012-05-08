@@ -37,8 +37,8 @@ class Jasmine
     VIM::Buffer.current.line_number
   end
 
-  def spec_name
-    describe_tree = ''
+  def focussed_spec_name
+    nested_describe = ''
     it_name = ''
 
     last_describe_indent_level = 100
@@ -50,7 +50,7 @@ class Jasmine
         seen_describe = true
         current_describe_indent_level = $1.length
         if current_describe_indent_level < last_describe_indent_level
-          describe_tree = describe_tree.empty? ? $2 : "#{$2} #{describe_tree}"
+          nested_describe = nested_describe.empty? ? $2 : "#{$2} #{nested_describe}"
           last_describe_indent_level = current_describe_indent_level
         end
 
@@ -65,18 +65,32 @@ class Jasmine
 
     end
 
-    spec_name = describe_tree
+    spec_name = nested_describe
     spec_name += " #{it_name}" unless it_name.empty?
 
     URI.escape(spec_name)
   end
 
+  def file_spec_name
+    describe_name = ''
+
+    1.upto(current_line_number + 1) do |line_number|
+      if VIM::Buffer.current[line_number] =~ /(?:describe)\("([^"]+)"/ ||
+         VIM::Buffer.current[line_number] =~ /(?:describe)\('([^']+)'/
+        describe_name = $1
+        break
+      end
+    end
+
+    URI.escape(describe_name)
+  end
+
   def run_spec
-    send_to_vimux("#{test_command} '#{current_file}&spec=#{spec_name}'")
+    send_to_vimux("#{test_command} '#{current_file}&spec=#{focussed_spec_name}'")
   end
 
   def run_all
-    send_to_vimux("#{test_command} '#{current_file}'")
+    send_to_vimux("#{test_command} '#{current_file}&spec=#{file_spec_name}'")
   end
 
   def test_command
