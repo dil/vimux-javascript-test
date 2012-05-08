@@ -94,7 +94,7 @@ class Jasmine
   end
 
   def test_command
-    'open'
+    "open -a 'Google Chrome'"
   end
 
   def send_to_vimux(test_command)
