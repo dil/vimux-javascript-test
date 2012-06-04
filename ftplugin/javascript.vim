@@ -44,7 +44,7 @@ class Jasmine
     it_indent_level = 999
     last_describe_indent_level = 999
     seen_describe = false
-    (current_line_number + 1).downto(1) do |line_number|
+    (current_line_number).downto(1) do |line_number|
       if it_name.empty? &&
         !seen_describe &&
         (VIM::Buffer.current[line_number] =~ /(.*)(?:it)\("([^"]+)"/ ||
